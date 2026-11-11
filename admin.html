@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#01411C">
+<title>Admin — DHAAGA</title>
+<link rel="stylesheet" href="site.css">
+<style>
+body{background:var(--soft)}
+.bar{background:var(--green);color:#fff}
+.bar .wrap{display:flex;align-items:center;gap:16px;height:64px}
+.bar .brand{color:#fff;font-size:16px;margin-right:0}
+.bar .chip{background:var(--neon);color:var(--ink)}
+.bar a,.bar button{font-size:12px;color:#fff;background:none;border:0;cursor:pointer;padding:10px 0}
+.bar a:hover,.bar button:hover{text-decoration:underline}
+.gate{max-width:380px;margin:12vh auto;background:#fff;padding:32px;border-top:4px solid var(--neon)}
+.gate h1{margin:0 0 6px;font-weight:400;font-size:26px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:28px 0}
+.stat{background:#fff;padding:18px 20px}
+.stat b{display:block;font-size:26px;font-weight:500;color:var(--green)}
+.stat span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.stat.alert{box-shadow:inset 3px 0 0 var(--neon)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.tabs button{border:0;background:none;padding:14px 18px;font-size:13px;cursor:pointer;color:var(--muted);box-shadow:inset 0 0 0 transparent}
+.tabs button[aria-selected="true"]{color:var(--ink);font-weight:600;box-shadow:inset 0 -3px 0 var(--neon)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.toolbar select,.toolbar input{min-height:40px;padding:0 12px;border:1px solid var(--line);background:#fff}
+.order{background:#fff;padding:20px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1.2fr auto;gap:20px;align-items:start}
+.order h3{margin:0 0 4px;font-size:16px}
+.order p{margin:0 0 4px;font-size:13px;line-height:1.5}
+.order .muted{color:var(--muted);font-size:12px}
+.order ul{margin:0;padding:0;list-style:none;font-size:13px;line-height:1.7}
+.order .right{text-align:right;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.order .total{font-size:16px;font-weight:600;color:var(--green)}
+.order select{min-height:40px;padding:0 10px;border:1px solid var(--line);background:#fff}
+.st-Pending{background:var(--neon);color:var(--ink)}.st-Confirmed{background:#d9ecdf}.st-Shipped{background:#cfe0f5}.st-Delivered{background:var(--green);color:#fff}.st-Cancelled{background:#ece9e6;color:#7a6f66}
+.empty{background:#fff;padding:40px;text-align:center;color:var(--muted)}
+.prod{background:#fff;padding:16px 20px;margin-bottom:10px;display:grid;grid-template-columns:56px 1.2fr 2fr auto;gap:18px;align-items:center}
+.prod img{width:56px;height:70px;object-fit:cover;background:var(--soft)}
+.prod h3{margin:0 0 6px;font-size:14px;font-weight:500}
+.prod.is-out img{filter:grayscale(1);opacity:.5}
+.sz{display:flex;gap:8px;flex-wrap:wrap}
+.sz label{display:flex;flex-direction:column;gap:3px;font-size:10px;color:var(--muted);text-align:center}
+.sz input{width:56px;min-height:38px;border:1px solid var(--line);text-align:center;font-size:14px}
+.sz input.zero{border-color:#d9a9a4;background:#fbf3f2}
+.prod .acts{display:flex;flex-direction:column;gap:6px}
+.prod .acts button{min-height:36px;padding:0 12px;font-size:11px;border:1px solid var(--line);background:#fff;cursor:pointer;white-space:nowrap}
+.prod .acts button:hover{border-color:var(--ink)}
+.danger{margin-top:32px;font-size:12px;color:var(--muted)}
+.danger button{border:0;background:none;color:#b3261e;text-decoration:underline;cursor:pointer;padding:8px 0}
+@media (max-width:860px){
+  .stats{grid-template-columns:1fr 1fr}
+  .order{grid-template-columns:1fr}
+  .order .right{text-align:left;align-items:flex-start;flex-direction:row;flex-wrap:wrap;justify-content:space-between;width:100%}
+  .prod{grid-template-columns:56px 1fr}
+  .prod .sz,.prod .acts{grid-column:1/-1}
+  .prod .acts{flex-direction:row}
+}
+</style>
+</head>
+<body>
+<div class="bar"><div class="wrap"><span class="brand">DHAAGA<small style="color:#b9cfc1">.pk</small></span><span class="chip">Admin</span>
+  <span style="margin-left:auto"></span><a href="index.html" target="_blank" rel="noopener">View store ↗</a><button id="logout" hidden>Log out</button></div></div>
+
+<main class="wrap">
+  <form class="gate" id="gate" hidden>
+    <h1>Admin sign in</h1>
+    <p class="bag-note">Owner access only.</p>
+    <div class="field"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required><span class="err" id="pw-err"></span></div>
+    <button class="btn btn--block">Sign in</button>
+  </form>
+
+  <div id="app" hidden>
+    <div class="stats"></div>
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="orders">Orders</button>
+      <button role="tab" aria-selected="false" data-tab="stock">Stock</button>
+    </div>
+    <section id="tab-orders">
+      <div class="toolbar"><select id="f-status" aria-label="Filter by status"><option value="">All statuses</option></select>
+        <input id="f-q" type="search" placeholder="Search name, phone, order no." aria-label="Search orders"></div>
+      <div id="orders"></div>
+    </section>
+    <section id="tab-stock" hidden>
+      <p class="bag-note" style="margin-top:0">Change a number and it saves straight away. A product shows <b>Sold out</b> in the store when every size is 0.</p>
+      <div id="stock"></div>
+      <p class="danger">Demo only: <button id="reset">Reset all demo data</button> (clears orders, restores starting stock).</p>
+    </section>
+  </div>
+</main>
+<div id="bag-status" role="status" aria-live="polite"></div>
+
+<script src="store.js"></script>
+<script>
+(() => {
+'use strict';
+const {P, fmt, esc, STATUSES} = Store;
+const $ = (s, r = document) => r.querySelector(s);
+// shortcut: client-side password check keeps casual visitors out of a demo, but anyone can read the JS.
+// Real admin needs server-side auth (e.g. Supabase Auth) before going live.
+const ADMIN_HASH = 'd0ab57f2508b53c9b4870f58bdc71dc95fa89920087fd6429228fa894bda5f38'; // password is kept outside the repo
+const SESSION = 'dhaaga-admin';
+const hash = async s => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))].map(b => b.toString(16).padStart(2, '0')).join('');
+const authed = () => { try { return sessionStorage.getItem(SESSION) === ADMIN_HASH; } catch { return false; } };
+
+function show() {
+  const ok = authed();
+  $('#gate').hidden = ok; $('#app').hidden = !ok; $('#logout').hidden = !ok;
+  if (ok) render(); else $('#pw').focus();
+}
+$('#gate').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!crypto.subtle) { $('#pw-err').textContent = 'Open this page over http://localhost or https.'; return; }
+  if (await hash($('#pw').value) !== ADMIN_HASH) { $('#pw-err').textContent = 'Wrong password.'; $('#pw').select(); return; }
+  try { sessionStorage.setItem(SESSION, ADMIN_HASH); } catch {}
+  $('#pw').value = ''; $('#pw-err').textContent = ''; show();
+});
+$('#logout').addEventListener('click', () => { try { sessionStorage.removeItem(SESSION); } catch {} show(); });
+
+$('#f-status').insertAdjacentHTML('beforeend', STATUSES.map(s => `<option>${s}</option>`).join(''));
+const ago = iso => { const d = new Date(iso); return d.toLocaleDateString('en-PK', {day: 'numeric', month: 'short'}) + ', ' + d.toLocaleTimeString('en-PK', {hour: 'numeric', minute: '2-digit'}); };
+
+function render() {
+  if (!authed()) return;
+  const orders = Store.orders(), live = orders.filter(o => o.status !== 'Cancelled');
+  const outCount = Object.keys(P).filter(id => !Store.available(id)).length;
+  $('.stats').innerHTML = `<div class="stat"><b>${orders.length}</b><span>Orders</span></div>
+    <div class="stat${orders.some(o => o.status === 'Pending') ? ' alert' : ''}"><b>${orders.filter(o => o.status === 'Pending').length}</b><span>Pending</span></div>
+    <div class="stat"><b>${fmt(live.reduce((s, o) => s + o.total, 0))}</b><span>Order value</span></div>
+    <div class="stat${outCount ? ' alert' : ''}"><b>${outCount}</b><span>Sold out products</span></div>`;
+
+  const fs = $('#f-status').value, q = $('#f-q').value.trim().toLowerCase();
+  const shown = orders.filter(o => (!fs || o.status === fs) && (!q || [o.id, o.customer.name, o.customer.phone].join(' ').toLowerCase().includes(q)));
+  $('#orders').innerHTML = shown.length ? shown.map(o => `<article class="order">
+      <div><h3>${o.id} <span class="chip st-${o.status}">${o.status}</span></h3><p class="muted">${ago(o.date)} · ${o.payment}</p>
+        <p style="margin-top:10px"><b>${esc(o.customer.name)}</b><br><a href="tel:${esc(o.customer.phone)}" style="text-decoration:underline">${esc(o.customer.phone)}</a></p>
+        <p>${esc(o.customer.address)}, ${esc(o.customer.city)}</p>${o.customer.notes ? `<p class="muted">Note: ${esc(o.customer.notes)}</p>` : ''}</div>
+      <ul>${o.items.map(it => `<li>${esc(it.name)} · ${esc(it.size)} × ${it.qty} — ${fmt(it.price * it.qty)}</li>`).join('')}
+        <li class="muted">Delivery ${o.delivery ? fmt(o.delivery) : 'free'}</li></ul>
+      <div class="right"><span class="total">${fmt(o.total)}</span>
+        <select data-order="${o.id}" aria-label="Status of ${o.id}"${o.status === 'Cancelled' ? ' disabled' : ''}>${STATUSES.map(s => `<option${s === o.status ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+    </article>`).join('') : `<div class="empty">${orders.length ? 'No orders match.' : 'No orders yet. Place one from the store to see it here.'}</div>`;
+
+  $('#stock').innerHTML = Object.values(P).map(p => { const out = !Store.available(p.id);
+    return `<div class="prod${out ? ' is-out' : ''}"><img src="${p.img}" alt="">
+      <div><h3>${esc(p.name)}</h3><span class="chip ${out ? 'chip--out' : 'chip--green'}">${out ? 'Sold out' : 'In stock'}</span> <span class="bag-note">${fmt(p.price)}</span></div>
+      <div class="sz">${p.sizes.map(s => { const n = Store.qty(p.id, s);
+        return `<label>${s}<input type="number" min="0" max="9999" step="1" inputmode="numeric" value="${n}" class="${n ? '' : 'zero'}" data-pid="${p.id}" data-size="${s}" aria-label="${esc(p.name)} size ${s} stock"></label>`; }).join('')}</div>
+      <div class="acts"><button data-all="${p.id}" data-n="0">Mark sold out</button><button data-all="${p.id}" data-n="10">Restock all to 10</button></div></div>`; }).join('');
+}
+
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.matches('[data-order]')) {
+    if (t.value === 'Cancelled' && !confirm(`Cancel ${t.dataset.order}? Its pieces go back into stock and it can't be reopened.`)) { render(); return; }
+    Store.setStatus(t.dataset.order, t.value); Store.toast(`${t.dataset.order} marked ${t.value}`);
+  } else if (t.matches('[data-pid]')) { Store.setStock(t.dataset.pid, t.dataset.size, t.value); }
+  else if (t.id === 'f-status') render();
+});
+$('#f-q').addEventListener('input', render);
+document.addEventListener('click', e => {
+  const tab = e.target.closest('[data-tab]');
+  if (tab) { document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-selected', b === tab));
+    $('#tab-orders').hidden = tab.dataset.tab !== 'orders'; $('#tab-stock').hidden = tab.dataset.tab !== 'stock'; return; }
+  const all = e.target.closest('[data-all]');
+  if (all) { const p = P[all.dataset.all]; p.sizes.forEach(s => Store.setStock(p.id, s, +all.dataset.n)); Store.toast(`${p.name}: ${+all.dataset.n ? 'restocked' : 'marked sold out'}`); return; }
+  if (e.target.id === 'reset' && confirm('Delete all demo orders and restore starting stock?')) { Store.resetDemo(); Store.toast('Demo data reset'); }
+});
+addEventListener('store:change', () => { if (!document.activeElement?.matches('[data-pid]')) render(); }); // don't redraw while typing a number
+show();
+})();
+</script>
+</body>
+</html>

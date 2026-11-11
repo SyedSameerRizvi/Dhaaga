@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#01411C">
+<title>Checkout — DHAAGA</title>
+<link rel="stylesheet" href="site.css">
+<style>
+.co{display:grid;grid-template-columns:1.2fr .8fr;gap:56px;padding:56px 0 88px;align-items:start}
+.co h1{margin:0 0 8px;font-weight:400;font-size:clamp(30px,3.6vw,44px);letter-spacing:-.02em}
+.co h2{margin:28px 0 16px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--green)}
+.lead{color:var(--muted);font-size:14px;margin:0 0 8px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.pay{display:flex;gap:14px;align-items:center;padding:16px;border:1px solid var(--green);box-shadow:inset 3px 0 0 var(--neon);font-size:14px}
+.pay small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+.summary{position:sticky;top:24px;background:var(--soft);padding:28px}
+.summary h2{margin-top:0}
+.line{display:grid;grid-template-columns:56px 1fr auto;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px}
+.line img{width:56px;height:70px;object-fit:cover;background:#fff}
+.line small{display:block;color:var(--muted);margin-top:4px}
+.line button{border:0;background:none;color:var(--muted);font-size:11px;text-decoration:underline;cursor:pointer;padding:4px 0;margin-top:4px}
+.form-err{color:#b3261e;font-size:13px;margin:12px 0 0}
+.form-err:empty{display:none}
+.done{max-width:620px;margin:0 auto;padding:72px 0 96px;text-align:center}
+.done .tick{width:72px;height:72px;border-radius:50%;background:var(--neon);display:grid;place-items:center;margin:0 auto 24px;animation:pop .7s var(--bounce)}
+.done h1{font-weight:400;font-size:clamp(30px,4vw,46px);margin:0 0 12px;letter-spacing:-.02em}
+.done p{color:var(--muted);line-height:1.6}
+.done .num{display:inline-block;margin:8px 0 20px;padding:8px 14px;background:var(--green);color:#fff;font-weight:600;letter-spacing:.08em}
+.done dl{display:grid;grid-template-columns:auto 1fr;gap:8px 20px;text-align:left;background:var(--soft);padding:20px 24px;margin:24px 0;font-size:14px}
+.done dt{color:var(--muted)}.done dd{margin:0}
+@keyframes pop{from{transform:scale(.3);opacity:0}}
+@media (max-width:899px){
+  .co{grid-template-columns:1fr;gap:32px;padding-top:32px}
+  .summary{position:static;order:-1;padding:20px}
+}
+@media (max-width:480px){.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="site-top"></div>
+<main class="wrap">
+  <div class="co" id="checkout">
+    <form id="order-form" novalidate>
+      <h1>Checkout</h1>
+      <p class="lead">No card needed. Pay in cash when your parcel arrives.</p>
+      <h2>Delivery details</h2>
+      <div class="field"><label for="f-name">Full name</label><input id="f-name" name="name" autocomplete="name" maxlength="60" required><span class="err"></span></div>
+      <div class="two">
+        <div class="field"><label for="f-phone">Mobile number</label><input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="03XX XXXXXXX" maxlength="16" required><span class="err"></span></div>
+        <div class="field"><label for="f-city">City</label><select id="f-city" name="city" required><option value="">Choose city</option></select><span class="err"></span></div>
+      </div>
+      <div class="field"><label for="f-address">Full address</label><textarea id="f-address" name="address" autocomplete="street-address" maxlength="240" placeholder="House, street, area, landmark" required></textarea><span class="err"></span></div>
+      <div class="field"><label for="f-notes">Order notes (optional)</label><input id="f-notes" name="notes" maxlength="160" placeholder="e.g. call before delivery"><span class="err"></span></div>
+      <h2>Payment</h2>
+      <div class="pay"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="6" width="20" height="12"/><circle cx="12" cy="12" r="2.5"/></svg>
+        <div><b>Cash on Delivery</b><small>Our rider collects payment at your door.</small></div></div>
+      <p class="form-err" role="alert"></p>
+      <button class="btn btn--block" type="submit" style="margin-top:24px;min-height:56px">Place order</button>
+    </form>
+    <aside class="summary" aria-labelledby="sum-title">
+      <h2 id="sum-title">Order summary</h2>
+      <div id="lines"></div>
+      <div id="sums" style="margin-top:12px"></div>
+    </aside>
+  </div>
+  <div class="done" id="done" hidden></div>
+</main>
+<div id="site-foot"></div>
+
+<script src="store.js"></script>
+<script>
+(() => {
+'use strict';
+const {P, fmt, esc, CITIES} = Store;
+const $ = (s, r = document) => r.querySelector(s);
+Store.mountChrome('');
+const form = $('#order-form');
+$('#f-city').insertAdjacentHTML('beforeend', CITIES.map(c => `<option>${c}</option>`).join(''));
+
+function renderSummary() {
+  const b = Store.bag(), t = Store.totals(b);
+  $('#lines').innerHTML = b.length ? b.map((x, i) => { const p = P[x.pid];
+    return `<div class="line"><img src="${p.img}" alt=""><div>${esc(p.name)}<small>${p.legend} ${x.size} · Qty ${x.qty}</small><button type="button" data-rm="${i}">Remove</button></div><b>${fmt(p.price * x.qty)}</b></div>`; }).join('')
+    : '<p class="bag-note">Your bag is empty. <a href="index.html#shop" style="text-decoration:underline">Continue shopping</a></p>';
+  $('#sums').innerHTML = b.length ? `<p class="bag-sum"><span>Subtotal</span><span>${fmt(t.subtotal)}</span></p>
+    <p class="bag-sum"><span>Delivery</span><span>${t.delivery ? fmt(t.delivery) : 'Free'}</span></p>
+    ${t.delivery ? `<p class="bag-note" style="margin:0">Add ${fmt(Store.FREE_OVER - t.subtotal)} more for free delivery.</p>` : ''}
+    <p class="bag-sum total"><span>Total to pay on delivery</span><span>${fmt(t.total)}</span></p>` : '';
+  form.querySelector('[type=submit]').disabled = !b.length;
+}
+$('#lines').addEventListener('click', e => { const r = e.target.closest('[data-rm]'); if (r) Store.setBagQty(+r.dataset.rm, 0); });
+addEventListener('store:change', renderSummary);
+
+// validation at the trust boundary: everything the customer types
+const clean = s => s.replace(/\s+/g, ' ').trim();
+function validate() {
+  const v = Object.fromEntries(new FormData(form)), errs = {};
+  v.name = clean(v.name || ''); v.address = clean(v.address || ''); v.notes = clean(v.notes || ''); v.city = v.city || '';
+  v.phone = (v.phone || '').replace(/[\s-]/g, '');
+  if (v.name.length < 3) errs.name = 'Please enter your full name.';
+  if (!/^(\+92|0092|0)3\d{9}$/.test(v.phone)) errs.phone = 'Enter a Pakistani mobile number, e.g. 0300 1234567.';
+  else v.phone = '0' + v.phone.slice(-10);
+  if (!CITIES.includes(v.city)) errs.city = 'Choose your city.';
+  if (v.address.length < 10) errs.address = 'Please add house, street and area.';
+  for (const el of form.querySelectorAll('.field')) { const n = el.querySelector('[name]').name;
+    el.classList.toggle('is-bad', !!errs[n]); el.querySelector('.err').textContent = errs[n] || ''; }
+  const first = Object.keys(errs)[0];
+  if (first) { form.elements[first].focus(); return null; }
+  return {name: v.name, phone: v.phone, city: v.city, address: v.address, notes: v.notes};
+}
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  $('.form-err').textContent = '';
+  const customer = validate(); if (!customer) return;
+  try {
+    const o = Store.placeOrder(customer);
+    $('#checkout').hidden = true;
+    const done = $('#done'); done.hidden = false;
+    done.innerHTML = `<div class="tick"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0f1a14" stroke-width="2"><path d="M4.5 12.5l5 5L19.5 7"/></svg></div>
+      <h1>Shukriya, ${esc(o.customer.name.split(' ')[0])}!</h1>
+      <p>Your order is placed. We'll call you on <b>${esc(o.customer.phone)}</b> to confirm before it ships.</p>
+      <span class="num">${o.id}</span>
+      <dl><dt>Items</dt><dd>${o.items.map(it => `${esc(it.name)} (${it.size}) × ${it.qty}`).join('<br>')}</dd>
+      <dt>Deliver to</dt><dd>${esc(o.customer.address)}, ${esc(o.customer.city)}</dd>
+      <dt>Pay on delivery</dt><dd><b>${fmt(o.total)}</b></dd></dl>
+      <a class="btn" href="index.html">Continue shopping</a>`;
+    scrollTo(0, 0);
+  } catch (err) { $('.form-err').textContent = err.message; renderSummary(); }
+});
+renderSummary();
+})();
+</script>
+</body>
+</html>
