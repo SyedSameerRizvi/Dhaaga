@@ -14,17 +14,17 @@ const TOPS = ['S','M','L','XL'], WAIST = ['28','30','32','34','36'], SHOES = ['4
 // shortcut: free Unsplash stock photos hotlinked as stand-ins; replace with your own product shoot before launch.
 const U = id => `https://images.unsplash.com/photo-${id}?w=600&h=750&fit=crop&auto=format&q=70`;
 const P = {
-  'tee-white':    {name:'Essential Cotton Tee',  cat:'Plain Tee · 100% cotton',   kind:'tee',   color:'#f4f2ee', price:1990, img:U('1581655353564-df123a1eb820')},
-  'tee-black':    {name:'Essential Tee — Black', cat:'Plain Tee · 100% cotton',   kind:'tee',   color:'#1f1f1f', price:1990, img:U('1610502778270-c5c6f4c7d575')},
-  'oxford-blue':  {name:'Oxford Button-Down',    cat:'Plain Shirt · Oxford',      kind:'shirt', color:'#a9c3dd', price:3490, img:U('1602810316693-3667c854239a')},
-  'linen-olive':  {name:'Olive Cotton Tee',      cat:'Plain Tee · 100% cotton',   kind:'tee',   color:'#6f7a4f', price:2190, isNew:true, img:U('1523380677598-64d85d015339')},
-  'poplin-sand':  {name:'Poplin Shirt — White',  cat:'Plain Shirt · Poplin',      kind:'shirt', color:'#ecebe6', price:3290, img:U('1603252109303-2751441dd157')},
-  'chino-khaki':  {name:'Straight Chino',        cat:'Trousers · Cotton twill',   kind:'pants', color:'#c2a878', price:3990}, // no good free photo yet: drawn placeholder
-  'denim-blue':   {name:'Relaxed Denim',         cat:'Trousers · Denim',          kind:'pants', color:'#5a7aa3', price:4490, img:U('1714143136372-ddaf8b606da7')},
-  'trouser-char': {name:'Slim Black Jeans',      cat:'Trousers · Stretch denim',  kind:'pants', color:'#232326', price:4290, img:U('1718252540511-e958742e4165')},
-  'sneaker-white':{name:'Court Sneaker',         cat:'Shoes · Leather',           kind:'shoe',  color:'#f2f2f2', price:6490, style:'sneaker', img:U('1636262900147-fb56689b61c5')},
-  'sneaker-black':{name:'Black Leather Sneaker', cat:'Shoes · Leather',           kind:'shoe',  color:'#242424', price:5990, style:'sneaker', isNew:true, img:U('1632497775901-50ba4637399f')},
-  'loafer-brown': {name:'Leather Loafer',        cat:'Shoes · Leather',           kind:'shoe',  color:'#7a4e2d', price:7490, style:'loafer', img:U('1787166125913-1a9d9332ec8e')},
+  'tee-white':    {desc:"The white tee you reach for first. Mid-weight cotton that keeps its shape, wash after wash.", name:'Essential Cotton Tee',  cat:'Plain Tee · 100% cotton',   kind:'tee',   color:'#f4f2ee', price:1990, img:U('1581655353564-df123a1eb820')},
+  'tee-black':    {desc:"Same tee, darker mood. Deep black that stays black, with a collar that does not give up.", name:'Essential Tee — Black', cat:'Plain Tee · 100% cotton',   kind:'tee',   color:'#1f1f1f', price:1990, img:U('1610502778270-c5c6f4c7d575')},
+  'oxford-blue':  {desc:"A proper Oxford in soft sky blue. Smart enough for the office, easy enough for Friday.", name:'Oxford Button-Down',    cat:'Plain Shirt · Oxford',      kind:'shirt', color:'#a9c3dd', price:3490, img:U('1602810316693-3667c854239a')},
+  'linen-olive':  {desc:"Olive that goes with everything in your wardrobe. Soft cotton, relaxed through the body.", name:'Olive Cotton Tee',      cat:'Plain Tee · 100% cotton',   kind:'tee',   color:'#6f7a4f', price:2190, isNew:true, img:U('1523380677598-64d85d015339')},
+  'poplin-sand':  {desc:"Crisp white poplin, cut clean. The shirt that makes any trouser look considered.", name:'Poplin Shirt — White',  cat:'Plain Shirt · Poplin',      kind:'shirt', color:'#ecebe6', price:3290, img:U('1603252109303-2751441dd157')},
+  'chino-khaki':  {desc:"Straight-leg chino in cotton twill. Sits right between dressed up and dressed down.", name:'Straight Chino',        cat:'Trousers · Cotton twill',   kind:'pants', color:'#c2a878', price:3990}, // no good free photo yet: drawn placeholder
+  'denim-blue':   {desc:"Relaxed denim in a mid-blue wash. Room to move, and it only gets better with wear.", name:'Relaxed Denim',         cat:'Trousers · Denim',          kind:'pants', color:'#5a7aa3', price:4490, img:U('1714143136372-ddaf8b606da7')},
+  'trouser-char': {desc:"Slim black jeans with a little stretch. Sharp from the first wear, comfortable all day.", name:'Slim Black Jeans',      cat:'Trousers · Stretch denim',  kind:'pants', color:'#232326', price:4290, img:U('1718252540511-e958742e4165')},
+  'sneaker-white':{desc:"A clean white leather sneaker with nothing extra on it. Goes with every look on the runway.", name:'Court Sneaker',         cat:'Shoes · Leather',           kind:'shoe',  color:'#f2f2f2', price:6490, style:'sneaker', img:U('1636262900147-fb56689b61c5')},
+  'sneaker-black':{desc:"All-black leather sneaker. Quiet, tough, and hides a long day well.", name:'Black Leather Sneaker', cat:'Shoes · Leather',           kind:'shoe',  color:'#242424', price:5990, style:'sneaker', isNew:true, img:U('1632497775901-50ba4637399f')},
+  'loafer-brown': {desc:"Hand-finished brown leather loafer. Slip on, look sorted.", name:'Leather Loafer',        cat:'Shoes · Leather',           kind:'shoe',  color:'#7a4e2d', price:7490, style:'loafer', img:U('1787166125913-1a9d9332ec8e')},
 };
 // items order: top, bottom, shoes (pins follow this order)
 const LOOKS = [
@@ -168,25 +168,38 @@ function renderBag() {
     `<p class="bag-sum"><span>Delivery</span><span>${t.delivery ? fmt(t.delivery) : 'Free'}</span></p><p class="bag-sum total"><span>Total</span><span>${fmt(t.total)}</span></p>` : '';
   $('#go-checkout').disabled = !b.length;
 }
+const THEMES = ['white', 'forest', 'mint'], THEME_KEY = 'dhaaga-theme';
+function setTheme(name) {
+  if (!THEMES.includes(name)) name = THEMES[0];
+  document.documentElement.dataset.theme = name;
+  try { localStorage.setItem(THEME_KEY, name); } catch {}
+  document.querySelectorAll('[data-theme-set]').forEach(b => b.setAttribute('aria-pressed', b.dataset.themeSet === name));
+}
 function mountChrome(active) {
-  const top = $('#site-top');
-  if (top) top.innerHTML = `<div class="topbar">Cash on Delivery<i></i>Free delivery over Rs 5,000<i></i>7-day exchange</div>
-    <header class="site-header"><a href="index.html" class="brand" aria-label="DHAAGA home">DHAAGA<small>.pk</small></a>
-    <nav aria-label="Main navigation">${[['home','index.html','Home'],['shop','index.html#shop','Shop',' class="nav-hide"'],['runway','runway.html','Runway']]
-      .map(([k, h, t, c = '']) => `<a href="${h}"${c}${k === active ? ' aria-current="page"' : ''}>${t}</a>`).join('')}</nav>
-    <button id="open-bag" aria-label="Open bag"><svg width="22" height="24" viewBox="0 0 24 26" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M4 8h16l1 16H3L4 8zM8 8V6a4 4 0 0 1 8 0v2"/></svg><span data-cart-count>0</span></button></header>`;
+  const top = $('#site-top'), cur = k => k === active ? ' aria-current="page"' : '';
+  if (top) top.innerHTML = `<header class="nav"><a class="nav__mark" href="index.html" aria-label="DHAAGA home"><span lang="ur" dir="rtl">دھاگہ</span></a>
+    <nav aria-label="Main navigation"><a href="index.html#shop"${cur('home')}>Shop</a><a href="runway.html"${cur('runway')}>Runway</a></nav>
+    <button id="open-bag" aria-label="Open bag">Bag (<span data-cart-count>0</span>)</button>
+    <div class="dots" role="group" aria-label="Colour theme">${THEMES.map(t => `<button data-theme-set="${t}" aria-label="${t} theme" aria-pressed="false"></button>`).join('')}</div></header>`;
   const foot = $('#site-foot');
-  if (foot) foot.innerHTML = `<footer class="site-foot"><div class="wrap">
-    <div><a href="index.html" class="brand">DHAAGA<small>.pk</small></a><p>Plain shirts, trousers and shoes, made in Pakistan.<br>Delivered nationwide, paid on delivery.</p></div>
-    <div><h4>Shop</h4><a href="index.html#shop">All pieces</a><a href="runway.html">Try the Look</a><a href="checkout.html">Checkout</a></div>
-    <div><h4>Help</h4><p>Delivery in 3–5 working days</p><p>7-day size exchange</p><p>Demo store: no real orders are fulfilled</p></div>
-    <p class="legal">© 2026 DHAAGA · Demo site</p></div></footer>`;
+  if (foot) foot.innerHTML = `<footer class="foot"><hr class="rule">
+    <div class="foot__big"><p>Made in Pakistan.<br>Worn everywhere.</p><span aria-hidden="true">©26</span></div>
+    <p class="foot__lead">Plain shirts, trousers and shoes in honest fabrics. No loud logos. Delivered anywhere in Pakistan, and you pay when it arrives.</p>
+    <div class="foot__cols">
+      <div><b>DHAAGA</b><p>All rights reserved © 2026</p></div>
+      <div><p>Cash on Delivery<br>Free delivery over Rs 5,000<br>7-day size exchange</p></div>
+      <div><a href="index.html#shop">Shop</a><a href="runway.html">Try the Look</a><a href="checkout.html">Checkout</a></div>
+      <div><p>Delivery in 3–5 working days, nationwide</p></div>
+      <div><p>Demo store. No real orders are fulfilled.</p></div>
+    </div></footer>`;
   document.body.insertAdjacentHTML('beforeend', `<dialog id="bag-dialog" aria-labelledby="bag-title">
-    <div class="bag-heading"><h2 id="bag-title">Your bag</h2><button id="close-bag" aria-label="Close bag">×</button></div>
+    <div class="bag-heading"><h2 id="bag-title">Bag</h2><button id="close-bag" aria-label="Close bag">×</button></div>
     <p class="bag-note">Pay in cash when your order arrives. Free delivery over Rs 5,000.</p>
     <div id="bag-items"></div><div id="bag-sums"></div>
-    <button id="go-checkout" class="btn btn--block">Checkout — Cash on Delivery</button></dialog>
+    <button id="go-checkout" class="btn btn--block">Checkout</button></dialog>
     <div id="bag-status" role="status" aria-live="polite"></div>`);
+  setTheme(document.documentElement.dataset.theme);
+  if (top) top.addEventListener('click', e => { const d = e.target.closest('[data-theme-set]'); if (d) setTheme(d.dataset.themeSet); });
   const dlg = $('#bag-dialog');
   $('#open-bag')?.addEventListener('click', () => { renderBag(); dlg.showModal(); });
   $('#close-bag').addEventListener('click', () => dlg.close());

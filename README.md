@@ -4,7 +4,8 @@ Static demo for a Pakistani clothing brand. No build step.
 
 | Page | What it is |
 |---|---|
-| `index.html` | Home page and product grid |
+| `index.html` | Home page and editorial product grid |
+| `product.html?id=…` | Product page (size, quantity, add to bag) |
 | `runway.html` | "Try the Look" runway |
 | `checkout.html` | Cash on Delivery checkout |
 | `admin.html` | Owner-only orders and stock (not linked from the store) |
