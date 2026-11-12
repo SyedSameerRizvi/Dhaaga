@@ -28,12 +28,6 @@ node store.test.js
 
 Checks the bag, stock, delivery fee, ordering and cancelling rules in `store.js`.
 
-## Admin (demo)
-
-- URL: `/admin.html`
-- Password: ask the store owner (kept out of this repo)
-
-To change it, put the SHA-256 hash of the new password in `ADMIN_HASH` in `admin.html`. Use a long random password: the hash is public in this repo.
 
 ## Demo limits
 
