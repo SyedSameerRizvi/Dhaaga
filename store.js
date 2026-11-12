@@ -6,7 +6,7 @@ window.Store = (() => {
 const K = {bag: 'dhaaga-bag-v2', stock: 'dhaaga-stock-v1', orders: 'dhaaga-orders-v1'};
 const DELIVERY = 250, FREE_OVER = 5000;
 const STATUSES = ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'];
-const CITIES = ['Karachi','Lahore','Islamabad','Rawalpindi','Faisalabad','Multan','Peshawar','Quetta','Hyderabad','Sialkot','Gujranwala','Other'];
+const CITIES = ['Karachi','Lahore','Islamabad','Rawalpindi','Faisalabad','Multan','Peshawar','Quetta','Hyderabad','Sialkot','Gujranwala','Sargodha','Bahawalpur','Sukkur','Abbottabad','Mardan'];
 
 /* ================= products (edit here) ================= */
 const LINE = 'rgba(0,0,0,.14)';
@@ -107,7 +107,8 @@ function bag() {
   const v = get(K.bag, []);
   return Array.isArray(v) ? v.filter(x => x && P[x.pid] && P[x.pid].sizes.includes(x.size) && Number.isInteger(x.qty) && x.qty >= 1 && x.qty <= 20).slice(0, 50) : [];
 }
-// returns names that could not be added because stock ran out
+const BLOCKED = 'Your browser is blocking storage, so the bag cannot be saved. Try a normal (not private) window.';
+// returns names that could not be added because stock ran out; throws if the browser will not save the bag
 function addToBag(items) {
   const b = bag(), failed = [];
   for (const {pid, size} of items) {
@@ -115,19 +116,21 @@ function addToBag(items) {
     if (have + 1 > Math.min(20, qty(pid, size))) { failed.push(P[pid].name); continue; }
     if (e) e.qty++; else b.push({pid, size, qty: 1});
   }
-  put(K.bag, b); emit();
+  if (failed.length < items.length && !put(K.bag, b)) throw new Error(BLOCKED);
+  emit();
   return failed;
 }
 function setBagQty(i, q) {
   const b = bag(); if (!b[i]) return;
   if (q < 1) b.splice(i, 1); else b[i].qty = Math.min(q, 20, qty(b[i].pid, b[i].size));
-  put(K.bag, b); emit();
+  if (!put(K.bag, b)) return toast(BLOCKED);
+  emit();
 }
 const totals = (lines = bag()) => { const subtotal = lines.reduce((s, x) => s + P[x.pid].price * x.qty, 0);
   const delivery = subtotal === 0 || subtotal >= FREE_OVER ? 0 : DELIVERY; return {subtotal, delivery, total: subtotal + delivery}; };
 
 /* orders */
-const orders = () => { const v = get(K.orders, []); return Array.isArray(v) ? v.filter(o => o && o.id && Array.isArray(o.items)) : []; };
+const orders = () => { const v = get(K.orders, []); return Array.isArray(v) ? v.filter(o => o && o.id && Array.isArray(o.items)) : []; }; // keep all: this list is written back on every change
 function placeOrder(customer) {
   const b = bag(); if (!b.length) throw new Error('Your bag is empty.');
   const st = stock();
@@ -214,6 +217,6 @@ function mountChrome(active) {
   renderCount();
 }
 
-return {P, LOOKS, PIN, STATUSES, CITIES, FREE_OVER, DELIVERY, fmt, esc, stock, qty, available, setStock, bag, addToBag, setBagQty, totals,
-  orders, placeOrder, setStatus, resetDemo, toast, mountChrome, openBag: () => $('#open-bag')?.click()};
+return {P, LOOKS, PIN, STATUSES, CITIES, FREE_OVER, fmt, esc, stock, qty, available, setStock, bag, addToBag, setBagQty, totals,
+  orders, placeOrder, setStatus, resetDemo, toast, mountChrome};
 })();

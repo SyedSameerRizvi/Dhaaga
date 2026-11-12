@@ -48,7 +48,7 @@
       <div class="field"><label for="f-name">Full name</label><input id="f-name" name="name" autocomplete="name" maxlength="60" required><span class="err"></span></div>
       <div class="two">
         <div class="field"><label for="f-phone">Mobile number</label><input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="03XX XXXXXXX" maxlength="16" required><span class="err"></span></div>
-        <div class="field"><label for="f-city">City</label><select id="f-city" name="city" required><option value="">Choose city</option></select><span class="err"></span></div>
+        <div class="field"><label for="f-city">City</label><input id="f-city" name="city" list="cities" autocomplete="address-level2" maxlength="40" placeholder="e.g. Lahore" required><datalist id="cities"></datalist><span class="err"></span></div>
       </div>
       <div class="field"><label for="f-address">Full address</label><textarea id="f-address" name="address" autocomplete="street-address" maxlength="240" placeholder="House, street, area, landmark" required></textarea><span class="err"></span></div>
       <div class="field"><label for="f-notes">Order notes (optional)</label><input id="f-notes" name="notes" maxlength="160" placeholder="e.g. call before delivery"><span class="err"></span></div>
@@ -76,7 +76,7 @@ const {P, fmt, esc, CITIES} = Store;
 const $ = (s, r = document) => r.querySelector(s);
 Store.mountChrome('');
 const form = $('#order-form');
-$('#f-city').insertAdjacentHTML('beforeend', CITIES.map(c => `<option>${c}</option>`).join(''));
+$('#cities').innerHTML = CITIES.map(c => `<option value="${c}">`).join('');
 
 function renderSummary() {
   const b = Store.bag(), t = Store.totals(b);
@@ -96,12 +96,13 @@ addEventListener('store:change', renderSummary);
 const clean = s => s.replace(/\s+/g, ' ').trim();
 function validate() {
   const v = Object.fromEntries(new FormData(form)), errs = {};
-  v.name = clean(v.name || ''); v.address = clean(v.address || ''); v.notes = clean(v.notes || ''); v.city = v.city || '';
+  v.name = clean(v.name || ''); v.address = clean(v.address || ''); v.notes = clean(v.notes || ''); v.city = clean(v.city || '');
   v.phone = (v.phone || '').replace(/[\s-]/g, '');
   if (v.name.length < 3) errs.name = 'Please enter your full name.';
   if (!/^(\+92|0092|0)3\d{9}$/.test(v.phone)) errs.phone = 'Enter a Pakistani mobile number, e.g. 0300 1234567.';
   else v.phone = '0' + v.phone.slice(-10);
-  if (!CITIES.includes(v.city)) errs.city = 'Choose your city.';
+  if (!/^[\p{L} .'-]{2,40}$/u.test(v.city)) errs.city = 'Enter your city.';
+  else v.city = CITIES.find(c => c.toLowerCase() === v.city.toLowerCase()) || v.city; // "lahore" -> "Lahore"
   if (v.address.length < 10) errs.address = 'Please add house, street and area.';
   for (const el of form.querySelectorAll('.field')) { const n = el.querySelector('[name]').name;
     el.classList.toggle('is-bad', !!errs[n]); el.querySelector('.err').textContent = errs[n] || ''; }

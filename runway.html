@@ -376,8 +376,8 @@
           <div class="rw__bundle">
             <p class="rw__msg" role="status" aria-live="polite"></p>
             <div class="rw__bundle-row">
-              <div class="rw__bundle-copy"><span class="rw__bundle-title">Complete the look</span><span class="rw__bundle-note">Bundle all 3 and save 10%</span></div>
-              <div class="rw__bundle-price"><s data-full></s><strong data-bundle></strong></div>
+              <div class="rw__bundle-copy"><span class="rw__bundle-title">Complete the look</span><span class="rw__bundle-note">Every piece in one tap</span></div>
+              <div class="rw__bundle-price"><strong data-bundle></strong></div>
             </div>
             <button class="rw__cta" data-all>
               <span class="cta-add">Add full look to bag</span>
@@ -401,7 +401,7 @@
 (() => {
 'use strict';
 const {P, LOOKS, PIN, fmt} = Store;
-const SPEED = 5000, BUNDLE_OFF = 0.10;
+const SPEED = 5000;
 Store.mountChrome('runway');
 
 /* ================= runway ================= */
@@ -522,7 +522,7 @@ function engage() { engaged = true; if (playing) play(false); }
 const ICONS = `<svg class="plus" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M12 4v16M4 12h16"/></svg><svg class="chk" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 12.5l5 5L19.5 7"/></svg><svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3a9 9 0 1 1-9 9"/></svg>`;
 const keyOf = li => index + ':' + li.dataset.pid;
 function renderPanel(animate) {
-  const L = LOOKS[index], full = L.items.reduce((s, id) => s + P[id].price, 0);
+  const L = LOOKS[index], full = L.items.filter(Store.available).reduce((s, id) => s + P[id].price, 0); // what the bag will really charge
   $('.rw__mhead-title', root).textContent = L.name;
   list.innerHTML = L.items.map((id, k) => { const p = P[id], added = ADDED.has(index + ':' + id), out = !added && !Store.available(id);
     return `<li class="rw__item${added ? ' is-added' : ''}${out ? ' is-soldout' : ''}" data-n="${k + 1}" data-pid="${id}" style="--i:${k + 1}">` +
@@ -532,8 +532,7 @@ function renderPanel(animate) {
       `<button class="rw__add" data-add aria-expanded="false" aria-label="${added ? 'Added to bag' : out ? 'Sold out' : 'Add to bag'}: ${p.name}"${out ? ' disabled' : ''}>${ICONS}</button></li>`; }).join('');
   $$('[data-pieces]', root).forEach(e => { e.textContent = L.items.length + ' pieces'; replay(e, 'is-swap'); });
   replay($('.rw__mhead', root), 'is-swap');
-  $('[data-full]', root).textContent = fmt(full);
-  $$('[data-bundle]', root).forEach(e => e.textContent = fmt(Math.round(full * (1 - BUNDLE_OFF) / 10) * 10));
+  $$('[data-bundle]', root).forEach(e => e.textContent = fmt(full));
   msg.textContent = '';
   checkComplete();
   if (animate) replay(panel, 'is-in');
@@ -588,7 +587,9 @@ function addRows(lis, btn) {
   lis.forEach(li => li.classList.add('is-loading')); if (btn) btn.classList.add('is-loading');
   setTimeout(() => { // short delay so the spinner reads as "saving"
     const size = li => SEL[keyOf(li)] || P[li.dataset.pid].sizes.find(s => Store.qty(li.dataset.pid, s) > 0);
-    const failed = Store.addToBag(lis.map(li => ({pid: li.dataset.pid, size: size(li)})));
+    let failed;
+    try { failed = Store.addToBag(lis.map(li => ({pid: li.dataset.pid, size: size(li)}))); }
+    catch (err) { msg.textContent = err.message; lis.forEach(li => li.classList.remove('is-loading')); if (btn) btn.classList.remove('is-loading'); return; }
     if (failed.length) msg.textContent = 'Not enough stock for: ' + failed.join(', ');
     const ok = lis.filter(li => !failed.includes(P[li.dataset.pid].name));
     lis.filter(li => !ok.includes(li)).forEach(li => li.classList.remove('is-loading'));
@@ -740,6 +741,12 @@ if (RM) root.classList.add('is-revealed');
 else { const io = new IntersectionObserver(([en]) => { if (en.isIntersecting) { io.disconnect(); requestAnimationFrame(() => requestAnimationFrame(() => root.classList.add('is-revealed'))); } }, {threshold: 0, rootMargin: '0px 0px -22% 0px'}); io.observe(root); }
 document.addEventListener('visibilitychange', kick);
 addEventListener('storage', () => { if (!picker) renderPanel(false); }); // stock edited in another tab (admin)
+// a piece removed from the bag can be added again from the runway
+addEventListener('store:change', () => {
+  const inBag = new Set(Store.bag().map(x => x.pid)), before = ADDED.size;
+  for (const k of ADDED) if (!inBag.has(k.split(':')[1])) ADDED.delete(k);
+  if (ADDED.size !== before && !picker) renderPanel(false);
+});
 let rt = 0; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(measure, 120); });
 new ResizeObserver(() => measure()).observe(stage);
 measure(); setIndex(0);

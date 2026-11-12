@@ -128,7 +128,7 @@ const ago = iso => { const d = new Date(iso); return d.toLocaleDateString('en-PK
 
 function render() {
   if (!authed()) return;
-  const orders = Store.orders(), live = orders.filter(o => o.status !== 'Cancelled');
+  const orders = Store.orders().filter(o => typeof o.id === 'string' && o.customer && STATUSES.includes(o.status)), live = orders.filter(o => o.status !== 'Cancelled');
   const outCount = Object.keys(P).filter(id => !Store.available(id)).length;
   $('.stats').innerHTML = `<div class="stat"><b>${orders.length}</b><span>Orders</span></div>
     <div class="stat${orders.some(o => o.status === 'Pending') ? ' alert' : ''}"><b>${orders.filter(o => o.status === 'Pending').length}</b><span>Pending</span></div>
@@ -138,13 +138,13 @@ function render() {
   const fs = $('#f-status').value, q = $('#f-q').value.trim().toLowerCase();
   const shown = orders.filter(o => (!fs || o.status === fs) && (!q || [o.id, o.customer.name, o.customer.phone].join(' ').toLowerCase().includes(q)));
   $('#orders').innerHTML = shown.length ? shown.map(o => `<article class="order">
-      <div><h3>${o.id} <span class="chip st-${o.status}">${o.status}</span></h3><p class="muted">${ago(o.date)} · ${o.payment}</p>
+      <div><h3>${esc(o.id)} <span class="chip st-${o.status}">${o.status}</span></h3><p class="muted">${ago(o.date)} · ${esc(o.payment)}</p>
         <p style="margin-top:10px"><b>${esc(o.customer.name)}</b><br><a href="tel:${esc(o.customer.phone)}" style="text-decoration:underline">${esc(o.customer.phone)}</a></p>
         <p>${esc(o.customer.address)}, ${esc(o.customer.city)}</p>${o.customer.notes ? `<p class="muted">Note: ${esc(o.customer.notes)}</p>` : ''}</div>
-      <ul>${o.items.map(it => `<li>${esc(it.name)} · ${esc(it.size)} × ${it.qty} — ${fmt(it.price * it.qty)}</li>`).join('')}
+      <ul>${o.items.map(it => `<li>${esc(it.name)} · ${esc(it.size)} × ${esc(it.qty)} — ${fmt(it.price * it.qty)}</li>`).join('')}
         <li class="muted">Delivery ${o.delivery ? fmt(o.delivery) : 'free'}</li></ul>
       <div class="right"><span class="total">${fmt(o.total)}</span>
-        <select data-order="${o.id}" aria-label="Status of ${o.id}"${o.status === 'Cancelled' ? ' disabled' : ''}>${STATUSES.map(s => `<option${s === o.status ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+        <select data-order="${esc(o.id)}" aria-label="Status of ${esc(o.id)}"${o.status === 'Cancelled' ? ' disabled' : ''}>${STATUSES.map(s => `<option${s === o.status ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
     </article>`).join('') : `<div class="empty">${orders.length ? 'No orders match.' : 'No orders yet. Place one from the store to see it here.'}</div>`;
 
   $('#stock').innerHTML = Object.values(P).map(p => { const out = !Store.available(p.id);
@@ -160,7 +160,7 @@ document.addEventListener('change', e => {
   if (t.matches('[data-order]')) {
     if (t.value === 'Cancelled' && !confirm(`Cancel ${t.dataset.order}? Its pieces go back into stock and it can't be reopened.`)) { render(); return; }
     Store.setStatus(t.dataset.order, t.value); Store.toast(`${t.dataset.order} marked ${t.value}`);
-  } else if (t.matches('[data-pid]')) { Store.setStock(t.dataset.pid, t.dataset.size, t.value); }
+  } else if (t.matches('[data-pid]')) { savingStock = true; Store.setStock(t.dataset.pid, t.dataset.size, t.value); savingStock = false; }
   else if (t.id === 'f-status') render();
 });
 $('#f-q').addEventListener('input', render);
@@ -172,7 +172,17 @@ document.addEventListener('click', e => {
   if (all) { const p = P[all.dataset.all]; p.sizes.forEach(s => Store.setStock(p.id, s, +all.dataset.n)); Store.toast(`${p.name}: ${+all.dataset.n ? 'restocked' : 'marked sold out'}`); return; }
   if (e.target.id === 'reset' && confirm('Delete all demo orders and restore starting stock?')) { Store.resetDemo(); Store.toast('Demo data reset'); }
 });
-addEventListener('store:change', () => { if (!document.activeElement?.matches('[data-pid]')) render(); }); // don't redraw while typing a number
+// redraw on every saved change; keep focus on the same stock box so Tab still moves to the next one.
+// A redraw from another tab (e.g. a new order) keeps whatever is half-typed in that box.
+let savingStock = false;
+addEventListener('store:change', () => {
+  const a = document.activeElement, box = a && a.matches('[data-pid]') ? `[data-pid="${a.dataset.pid}"][data-size="${a.dataset.size}"]` : null;
+  const typed = box && !savingStock ? a.value : null;
+  render();
+  const el = box && $(box); if (!el) return;
+  if (typed !== null) el.value = typed;
+  el.focus();
+});
 show();
 })();
 </script>

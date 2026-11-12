@@ -19,7 +19,6 @@ button,a{-webkit-tap-highlight-color:transparent}
 button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 [hidden]{display:none!important}
 .wrap{padding:0 var(--gut)}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
 .rule{height:4px;background:var(--ink);border:0;margin:0}
 .rule--thin{height:1px}
 .cap{font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}
@@ -28,8 +27,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:0 28px;border:0;border-radius:0;background:var(--ink);color:var(--bg);
   font-size:18px;letter-spacing:-.01em;cursor:pointer;box-shadow:inset 0 0 0 2px var(--ink);transition:background .3s,color .3s}
 .btn:hover{background:transparent;color:var(--ink)}
-.btn--ghost{background:transparent;color:var(--ink)}
-.btn--ghost:hover{background:var(--ink);color:var(--bg)}
 .btn--block{width:100%}
 .btn:disabled{opacity:.35;cursor:default;background:var(--ink);color:var(--bg)}
 
@@ -88,17 +85,15 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 /* forms */
 .field{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
 .field label{font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}
-.field input,.field select,.field textarea{width:100%;min-height:48px;padding:10px 0;border:0;border-bottom:1px solid var(--ink);border-radius:0;background:transparent;font-size:18px;letter-spacing:-.01em}
-.field select option{color:#0f1a14;background:#fff}
+.field input,.field textarea{width:100%;min-height:48px;padding:10px 0;border:0;border-bottom:1px solid var(--ink);border-radius:0;background:transparent;font-size:18px;letter-spacing:-.01em}
 .field textarea{min-height:84px;resize:vertical}
 .field ::placeholder{color:var(--muted);opacity:.7}
-.field input:focus,.field select:focus,.field textarea:focus{outline:0;box-shadow:0 3px 0 var(--ink)}
+.field input:focus,.field textarea:focus{outline:0;box-shadow:0 3px 0 var(--ink)}
 .field .err{font-size:12px;font-weight:600}
 .field.is-bad .err::before{content:"! "}
 
 /* chips */
 .chip{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;background:var(--soft);color:var(--ink)}
-.chip--neon{background:var(--ink);color:var(--bg)}
 .chip--green{background:var(--ink);color:var(--bg)}
 .chip--out{background:transparent;box-shadow:inset 0 0 0 1px var(--ink)}
 

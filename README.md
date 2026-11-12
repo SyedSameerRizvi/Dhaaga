@@ -20,6 +20,14 @@ python -m http.server 8080
 
 Then open http://localhost:8080. Serving over localhost is needed for the bag, orders and admin sign-in.
 
+## Test
+
+```bash
+node store.test.js
+```
+
+Checks the bag, stock, delivery fee, ordering and cancelling rules in `store.js`.
+
 ## Admin (demo)
 
 - URL: `/admin.html`
